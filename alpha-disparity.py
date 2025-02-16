@@ -2,18 +2,24 @@ import sys
 import numpy as np
 import cv2 as cv
 
-def generateDepthMap():
+def generateDepthMap(SHOW_DEPTH):
     imgL = cv.imread(sys.argv[1], cv.IMREAD_GRAYSCALE)
     imgR = cv.imread(sys.argv[2], cv.IMREAD_GRAYSCALE)
 
     stereo = cv.StereoSGBM.create(
-        numDisparities = 16 * 3,
-        blockSize = 5 * 3,
+        numDisparities = 16 * 5,
+        blockSize = 9,
     )
     disparityMap = stereo.compute(imgL,imgR)
     disparityMap = np.float32(disparityMap)
     disparityMap = cv.normalize(disparityMap, disparityMap, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
     disparityMap = np.uint8(disparityMap)
+    disparityMap = cv.medianBlur(disparityMap, 3)
+
+    if SHOW_DEPTH:
+        cv.imshow('Disparity Map', disparityMap)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
     return disparityMap
 
 
@@ -73,7 +79,7 @@ def pointCloudFile(vertices, colors):
 
 
 def main():
-    disparityMap = generateDepthMap()
+    disparityMap = generateDepthMap(SHOW_DEPTH = False)
     generatePointCloud(disparityMap)
 
 main()
