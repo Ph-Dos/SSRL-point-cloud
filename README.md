@@ -15,7 +15,7 @@
 <hr>
 
 ### Virtual ENV Dependencies for WSL
-* `python3 -m venv open3d_env source open3d_env/bin/activate`
-* `pip install open3d numpy opencv-python`
+1. `python3 -m venv open3d_env source open3d_env/bin/activate`
+2. `pip install open3d numpy opencv-python`
 
 [**`Data Set`**](https://vision.middlebury.edu/stereo/data/scenes2014/)
