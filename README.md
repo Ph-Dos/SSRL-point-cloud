@@ -19,9 +19,12 @@
 ### Virtual ENV Dependencies for WSL
 
 1. ```
-   python3 -m venv open3d_env source open3d_env/bin/activate
+   python3 -m venv open3d_env
    ```
 2. ```
+   source open3d_env/bin/activate
+   ```
+3. ```
    pip install open3d numpy opencv-python
    ```
 
