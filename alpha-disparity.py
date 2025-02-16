@@ -1,7 +1,6 @@
 import sys
 import numpy as np
 import cv2 as cv
-from matplotlib import pyplot as plt
 
 def generateDepthMap():
     imgL = cv.imread(sys.argv[1], cv.IMREAD_GRAYSCALE)
@@ -19,25 +18,34 @@ def generateDepthMap():
 def generatePointCloud(disparityMap):
     disparityMap = np.float32(np.divide(disparityMap, 16.0))
 
-    # Baseline
-    baseline = 178.089
+    Q = generateQMatrix()
 
-    # Define the Q matrix using the intrinsic parameters and baseline
-    Q = np.array([
-        [1, 0, 0, -356.021],
-        [0, -1, 0, 238.263],
-        [0, 0, 0, 713.189],
-        [0, 0, 1 / baseline, 0]
-    ])
+    projection = cv.reprojectImageTo3D(disparityMap, Q, handleMissingValues = False)
 
     imgL = cv.imread(sys.argv[1])
 
-    projection = cv.reprojectImageTo3D(disparityMap, Q, handleMissingValues = False)
     colors = cv.cvtColor(imgL, cv.COLOR_BGR2RGB)
     maskMap = disparityMap > disparityMap.min()
     outputPoints = projection[maskMap]
     outputColors = colors[maskMap]
     pointCloudFile(outputPoints, outputColors)
+
+
+def generateQMatrix():
+    calibData = {}
+    with open(sys.argv[3], 'r') as file:
+        for line in file:
+            key, value = line.strip().split('=')
+            calibData[key] = value
+    P1 = np.array(list(map(float, calibData['cam0'].split()))).reshape(3, 3)
+    P2 = np.array(list(map(float, calibData['cam1'].split()))).reshape(3, 3)
+    Q = np.array([
+        [1, 0, 0, -P1[0, 2]],
+        [0, 1, 0, -P1[1, 2]],
+        [0, 0, 0, -P1[0, 0]],
+        [0, 0, -1/float(calibData['baseline']), 0]
+    ])
+    return Q
 
 
 def pointCloudFile(vertices, colors):
