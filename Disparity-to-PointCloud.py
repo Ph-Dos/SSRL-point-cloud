@@ -14,20 +14,22 @@ def main():
         sys.exit(0)
 
     data = readData()
-    fx = data['cam0'][0]
-    cx = data['cam0'][2]
-    cy = data['cam0'][5]
-    doffs = float(data['doffs'])
+    focal = data['cam0'][0]
+    principalX = data['cam0'][2]
+    principalY = data['cam0'][5]
+    dispOff = float(data['doffs'])
     baseline = float(data['baseline'])
 
     disparityMap = generateDepthMap(SHOW_DEPTH)
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(generatePointCloud(disparityMap, fx, cx, cy, doffs, baseline))
+    points3D = generatePointCloud(disparityMap, focal, principalX, principalY, dispOff, baseline)
+    pCloud = o3d.geometry.PointCloud()
+    pCloud.points = o3d.utility.Vector3dVector(points3D)
 
     # Save to PLY file
-    o3d.io.write_point_cloud("out.ply", pcd)
+    o3d.io.write_point_cloud("out.ply", pCloud)
 
 
+# Computes and optionally displays a disparity map from two grayscale images
 def generateDepthMap(SHOW_DEPTH):
     imgL = cv.imread(sys.argv[1], cv.IMREAD_GRAYSCALE)
     imgR = cv.imread(sys.argv[2], cv.IMREAD_GRAYSCALE)
@@ -52,7 +54,8 @@ def generateDepthMap(SHOW_DEPTH):
     return disparityMap
 
 
-def generatePointCloud(disparityMap, fx, cx, cy, doffs, baseline):
+# Converts a disparity map into a 3D point cloud using given camera parameters.
+def generatePointCloud(disparityMap, focal, principalX, principalY, dispOff, baseline):
     disparityMap = disparityMap.astype(np.float32)
 
     #Prevent divide by zero
@@ -64,18 +67,18 @@ def generatePointCloud(disparityMap, fx, cx, cy, doffs, baseline):
     # Compute 3D coordinates
     h, w = disparityMap.shape
     Q = np.array([
-        [1, 0, 0, -cx],
-        [0, 1, 0, -cy],
-        [0, 0, 0, fx],
-        [0, 0, -1 / baseline, doffs / baseline]
+        [1, 0, 0, -principalX],
+        [0, 1, 0, -principalY],
+        [0, 0, 0, focal],
+        [0, 0, -1 / baseline, dispOff / baseline]
     ])
 
     # Reproject to 3D space
-    points_3D = cv.reprojectImageTo3D(disparityMap, Q)
+    points3D = cv.reprojectImageTo3D(disparityMap, Q)
 
     # Mask out invalid points
-    mask = (disparityMap > 0) & np.isfinite(points_3D[:,:,2])
-    return points_3D[mask]
+    mask = (disparityMap > 0) & np.isfinite(points3D[:,:,2])
+    return points3D[mask]
 
 
 def readData():
