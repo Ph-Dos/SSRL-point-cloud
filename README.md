@@ -2,9 +2,9 @@
 
 #### 1️⃣ Disparity Map Generation
 * Disparity map is generated with Simple Stero
-  * Disparity values are computed using triangulation of corrisponding points Determined by pixel positions from Left and Right Images
-  * Corrisponding points are determined by locating the most similiar pixel pattern using a kernel scanned over an Epipolar line
-      * Only works if y-values in Left and Right images are Identical
+  * Disparity values are computed using triangulation of corresponding points determined by pixel positions from left and right images
+  * Corresponding points are determined by locating the most similar pixel pattern using a kernel scanned over an epipolar line
+      * Only works Because y-values in Left and Right images are Identical
 
 
 #### 2️⃣ Point Cloud Generation
