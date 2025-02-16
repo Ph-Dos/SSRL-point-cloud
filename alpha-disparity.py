@@ -32,30 +32,34 @@ def generatePointCloud(disparityMap):
 
     imgL = cv.imread(sys.argv[1])
 
-    projection = cv.reprojectImageTo3D(disparityMap, Q)
+    projection = cv.reprojectImageTo3D(disparityMap, Q, handleMissingValues = False)
+    colors = cv.cvtColor(imgL, cv.COLOR_BGR2RGB)
     maskMap = disparityMap > disparityMap.min()
     outputPoints = projection[maskMap]
-    outputColors = imgL[maskMap]
-    outputColors = outputColors.reshape(-1, 3)
+    outputColors = colors[maskMap]
     pointCloudFile(outputPoints, outputColors)
 
 
 def pointCloudFile(vertices, colors):
+    colors = colors.reshape(-1, 3)
+    vertices = np.hstack([vertices.reshape(-1, 3), colors])
+
+
     ply_header = '''ply
-    format ascii 1.0
-    element vertex {vertex_count}
-    property float x
-    property float y
-    property float z
-    property uchar red
-    property uchar green
-    property uchar blue
-    end_header
-    '''
+        format ascii 1.0
+        element vertex {vertex_count}
+        property float x
+        property float y
+        property float z
+        property uchar red
+        property uchar green
+        property uchar blue
+        end_header
+        '''
+
     with open('out-put.ply', 'w') as f:
         f.write(ply_header.format(vertex_count=len(vertices)))
-        vertices_colors = np.hstack([vertices, colors])
-        np.savetxt(f, vertices_colors, fmt='%f %f %f %d %d %d')
+        np.savetxt(f, vertices, fmt = '%f %f %f %d %d %d')
     
 
 def main():
