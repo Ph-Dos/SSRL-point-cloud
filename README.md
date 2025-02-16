@@ -10,7 +10,7 @@
 
 
 #### 2️⃣ Point Cloud Generation
-* Point cloud is generated using 3D rectification
+* Point cloud is generated using 3D reprojection
   * Images provided are already rectified thus Q matrix can be composed from calibration data Via **`Data Set`** 
 
 
